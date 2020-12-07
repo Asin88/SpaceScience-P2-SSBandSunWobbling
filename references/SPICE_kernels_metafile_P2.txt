@@ -7,8 +7,20 @@
 
 \begindata
 
-KERNELS_TO_LOAD = (
-    '../_kernels/spk/de432s.bsp',
-    '../_kernels/lsk/naif0012.tls',
-    '../_kernels/pck/pck00010.tpc'
-                  )
+    PATH_VALUES     = ('E:/Data Science Projects/Space Science/+'
+			'SpaceScience-P2-SSBandSunWobbling/data/external/+'
+			'_kernels/spk',
+                        'E:/Data Science Projects/Space Science/+'
+			'SpaceScience-P2-SSBandSunWobbling/data/external/+'
+			'_kernels/pck',
+                        'E:/Data Science Projects/Space Science/+'
+			'SpaceScience-P2-SSBandSunWobbling/data/external/+'
+			'_kernels/lsk')
+
+    PATH_SYMBOLS    = ('SPK' , 
+		       'PCK' , 
+		       'LSK')
+
+    KERNELS_TO_LOAD = ('$SPK/de432s.bsp', 
+		       '$PCK/pck00010.tpc',
+		       '$LSK/naif0012.tls')
