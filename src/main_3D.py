@@ -576,6 +576,10 @@ def main():
     plt.title(f"Position of Centre of Sun wrt SSB between {init_time_utc_str}\
               and {end_time_utc_str}") 
     
+    # Saving the figure in high quality
+    plt.savefig(r'E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\figures\SUN_WRT_SSB_30_YEARS_3D.png', dpi=300)
+    plt.show()
+    
 # === Run the Script ===
     
 if __name__ == "__main__":
