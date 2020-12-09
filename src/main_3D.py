@@ -12,7 +12,7 @@ Space Science Project 2.1
 
 """
 According to Kepler's laws, the Earth revolves in an elliptical orbit with the 
-Sun at one of it focii. However, applying Newton's mechanics related to centre 
+Sun at one of its focii. However, applying Newton's mechanics related to centre 
 of mass, it is seen that the centre of mass of the total solar system does not
 necessarily coincide with the centre of the Sun. Even though the Sun accounts
 for nearly 90% of the total mass of the solar system, the mass of the other 
