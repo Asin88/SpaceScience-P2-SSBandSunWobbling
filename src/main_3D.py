@@ -226,10 +226,10 @@ Arguements:
 Returns:
     SSB_position: List of X, Y Z coordinates of position of SSB wrt Sun
 """
-def f_calc_position(time_et):
+def f_calc_position(target,obs,time_et):
     
-    SSB_position, _ = spiceypy.spkgps(targ=0,et=time_et,\
-                                            ref="ECLIPJ2000",obs=10)
+    SSB_position, _ = spiceypy.spkgps(targ=target,et=time_et,\
+                                            ref="ECLIPJ2000",obs=obs)
     return(SSB_position)
     
 # === Function to scale distance to radius of Sun ===
@@ -341,7 +341,7 @@ def main():
     init_time_et, init_time_utc_str = f_convert_utc_to_et(init_time_utc)
     
     #Compute the position of SSB wrt Sun
-    SSB_position_init = f_calc_position(init_time_et)
+    SSB_position_init = f_calc_position(0,10,init_time_et)
     #Report position
     print(f"On {init_time_utc_str}: \n\nPosition of SSB wrt Sun: \n \
           X-axis = {SSB_position_init[0]} km \n \
@@ -427,7 +427,7 @@ def main():
     
     #Compute position of SSB wrt sun for each time step. 
     for time_interval_et_f in time_interval_et:
-        _position = f_calc_position(time_interval_et_f)
+        _position = f_calc_position(0,10,time_interval_et_f)
         #Append the result to the final list
         SSB_position_interval.append(_position)    
     #Convert the list to a numpy array
@@ -499,6 +499,82 @@ def main():
     print(f"i.e. {round(SSB_max_day/365,2)} years later.")
     print(f"It was {round(SSB_position_interval_scaled_max*radius_sun,2)} km away.")
     
+    # === Plot movement of Sun around SSB ===
+    
+    #Compute Sun position wrt SSB for each day
+    
+    #Set an empty list to store x, y, z components for each time step
+    Sun_position = []
+    
+    #Compute position of SSB wrt sun for each time step. 
+    for time_interval_et_f in time_interval_et:
+        _position = f_calc_position(10,0,time_interval_et_f)
+        #Append the result to the final list
+        Sun_position.append(_position)    
+    #Convert the list to a numpy array
+    Sun_position = np.array(Sun_position)
+    
+    #Scale the position values using the Sun's radius
+    Sun_position_scaled = f_scale_distance(Sun_position,\
+                                                    radius_sun)
+    
+    # Set a dark background... since... space is dark
+    plt.style.use('dark_background')
+    # Create a figure and ax
+    fig,ax = plt.subplots(figsize=(12, 8))#,projection='3d')
+#    fig = plt.figure(figsize=(12, 8))
+#    ax = plt.axes(projection='3d')
+#    fig = plt.figure(figsize=(12, 8))
+    ax = plt.axes(projection='3d')
+    ax.set_facecolor('xkcd:black')
+    
+#    ax = fig.add_subplot(111, projection='3d')
+#    ax = fig.gca(projection='3d')
+    
+    # Plot the SSB at centre
+    ax.plot(0, 0, 0, '.', c='blue')
+    ax.text(0, 0, 0, "SSB", color='blue')
+    # Plot the Sun movement
+    ax.plot(Sun_position_scaled[:,0], \
+            Sun_position_scaled[:,1], \
+            Sun_position_scaled[:,2],\
+            '.', c='yellow')
+    #Add annotations
+    ax.text(Sun_position_scaled[0,0],\
+            Sun_position_scaled[0,1],\
+            Sun_position_scaled[0,2],
+            "Day 1",color='red')    
+    ax.text(Sun_position_scaled[-1,0],\
+            Sun_position_scaled[-1,1],\
+            Sun_position_scaled[-1,2],
+            "30 yrs later",color='red')
+    
+    # Set some parameters for the plot, set an equal ratio, set a grid, and set
+    # the x and y limits
+#    ax.set_aspect('auto')
+    ax.grid(True, linestyle='dashed')
+    ax.set_xlim(-2, 2)
+    ax.set_ylim(-2, 2)
+    ax.set_xlim(-2,2)
+    # Some labelling
+    ax.set_xlabel('X in Sun-Radius')
+    ax.set_ylabel('Y in Sun-Radius')
+    ax.set_zlabel('Z in Sun-Radius')
+    
+    #Set font sizes
+    small_font_size = 8
+    med_font_size = 10
+    big_font_size = 12
+    plt.rc('font', size=small_font_size)
+    plt.rc('axes', titlesize=med_font_size)     
+    plt.rc('axes', labelsize=med_font_size)    
+    plt.rc('xtick', labelsize=small_font_size)    
+    plt.rc('ytick', labelsize=small_font_size)    
+    plt.rc('figure', titlesize=big_font_size)      
+    
+    #Add plot title
+    plt.title(f"Position of Centre of Sun wrt SSB between {init_time_utc_str}\
+              and {end_time_utc_str}") 
     
 # === Run the Script ===
     

@@ -357,10 +357,10 @@ given time using the spicepy spkgps function. </p>
    SSB_position: List of X, Y Z coordinates of position of SSB wrt Sun</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_calc_position</span><span class="p">(</span><span class="n">time_et</span><span class="p">):</span>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_calc_position</span><span class="p">(</span><span class="n">target</span><span class="p">,</span><span class="n">obs</span><span class="p">,</span><span class="n">time_et</span><span class="p">):</span>
     
-    <span class="n">SSB_position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">spkgps</span><span class="p">(</span><span class="n">targ</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">et</span><span class="o">=</span><span class="n">time_et</span><span class="p">,</span>\
-                                            <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;ECLIPJ2000&quot;</span><span class="p">,</span><span class="n">obs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">SSB_position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">spkgps</span><span class="p">(</span><span class="n">targ</span><span class="o">=</span><span class="n">target</span><span class="p">,</span><span class="n">et</span><span class="o">=</span><span class="n">time_et</span><span class="p">,</span>\
+                                            <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;ECLIPJ2000&quot;</span><span class="p">,</span><span class="n">obs</span><span class="o">=</span><span class="n">obs</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">SSB_position</span><span class="p">)</span></pre></div>
     </div>
   </div>
@@ -653,7 +653,7 @@ randomly chosen time. Let&rsquo;s choose the time as my birthday (24 April 1988,
       <p>Compute the position of SSB wrt Sun</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">SSB_position_init</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="n">init_time_et</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">SSB_position_init</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">init_time_et</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -941,7 +941,7 @@ Create a numpy array that covers a time interval in delta = 1 day step</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">for</span> <span class="n">time_interval_et_f</span> <span class="ow">in</span> <span class="n">time_interval_et</span><span class="p">:</span>
-        <span class="n">_position</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="n">time_interval_et_f</span><span class="p">)</span></pre></div>
+        <span class="n">_position</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="n">time_interval_et_f</span><span class="p">)</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1214,11 +1214,10 @@ We only plot the x, y components (view on the ecliptic plane)</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-79'>#</a>
       </div>
-      <h3><span id="run-the-script" href="run-the-script"> Run the Script </span></h3>
+      <h3><span id="plot-movement-of-sun-around-ssb" href="plot-movement-of-sun-around-ssb"> Plot movement of Sun around SSB </span></h3>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1227,10 +1226,10 @@ We only plot the x, y components (view on the ecliptic plane)</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-80'>#</a>
       </div>
-      <p>Output file</p>
+      <p>Compute Sun position wrt SSB for each day</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">outfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\outfile.txt&quot;</span><span class="p">,</span><span class="s2">&quot;w+&quot;</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1239,10 +1238,10 @@ We only plot the x, y components (view on the ecliptic plane)</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-81'>#</a>
       </div>
-      <p>Call the main function</p>
+      <p>Set an empty list to store x, y, z components for each time step</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="n">main</span><span class="p">()</span></pre></div>
+      <div class="highlight"><pre>    <span class="n">Sun_position</span> <span class="o">=</span> <span class="p">[]</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -1250,6 +1249,256 @@ We only plot the x, y components (view on the ecliptic plane)</p>
     <div class='docs'>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-82'>#</a>
+      </div>
+      <p>Compute position of SSB wrt sun for each time step. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">for</span> <span class="n">time_interval_et_f</span> <span class="ow">in</span> <span class="n">time_interval_et</span><span class="p">:</span>
+        <span class="n">_position</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">time_interval_et_f</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-83'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-83'>#</a>
+      </div>
+      <p>Append the result to the final list</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">Sun_position</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_position</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-84'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-84'>#</a>
+      </div>
+      <p>Convert the list to a numpy array</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">Sun_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Sun_position</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-85'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-85'>#</a>
+      </div>
+      <p>Scale the position values using the Sun&rsquo;s radius</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">Sun_position_scaled</span> <span class="o">=</span> <span class="n">f_scale_distance</span><span class="p">(</span><span class="n">Sun_position</span><span class="p">,</span>\
+                                                    <span class="n">radius_sun</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-86'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-86'>#</a>
+      </div>
+      <p>Set a dark background&hellip; since&hellip; space is dark</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;dark_background&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-87'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-87'>#</a>
+      </div>
+      <p>Create a figure and ax</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span><span class="c1">#,projection=&#39;3d&#39;)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-88'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-88'>#</a>
+      </div>
+      <p>fig = plt.figure(figsize=(12, 8))
+   ax = plt.axes(projection=&lsquo;3d&rsquo;)
+   fig = plt.figure(figsize=(12, 8))</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;xkcd:black&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-89'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-89'>#</a>
+      </div>
+      <p>ax = fig.add_subplot(111, projection=&lsquo;3d&rsquo;)
+   ax = fig.gca(projection=&lsquo;3d&rsquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-90'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-90'>#</a>
+      </div>
+      <p>Plot the SSB at centre</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;SSB&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-91'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-91'>#</a>
+      </div>
+      <p>Plot the Sun movement</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">Sun_position_scaled</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> \
+            <span class="n">Sun_position_scaled</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> \
+            <span class="n">Sun_position_scaled</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span>\
+            <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-92'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-92'>#</a>
+      </div>
+      <p>Add annotations</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">Sun_position_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>\
+            <span class="n">Sun_position_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>\
+            <span class="n">Sun_position_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s2">&quot;Day 1&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>    
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">Sun_position_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>\
+            <span class="n">Sun_position_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>\
+            <span class="n">Sun_position_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s2">&quot;30 yrs later&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-93'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-93'>#</a>
+      </div>
+      <p>Set some parameters for the plot, set an equal ratio, set a grid, and set
+the x and y limits
+   ax.set_aspect(&lsquo;auto&rsquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-94'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-94'>#</a>
+      </div>
+      <p>Some labelling</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;X in Sun-Radius&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Y in Sun-Radius&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Z in Sun-Radius&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-95'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-95'>#</a>
+      </div>
+      <p>Set font sizes</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">small_font_size</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">med_font_size</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">big_font_size</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;font&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="n">med_font_size</span><span class="p">)</span>     
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">med_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;xtick&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;ytick&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="n">big_font_size</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-96'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-96'>#</a>
+      </div>
+      <p>Add plot title</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Position of Centre of Sun wrt SSB between {init_time_utc_str}</span><span class="se">\</span>
+<span class="s2">              and {end_time_utc_str}&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-97'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-97'>#</a>
+      </div>
+      <h3><span id="run-the-script" href="run-the-script"> Run the Script </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-98'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-98'>#</a>
+      </div>
+      <p>Output file</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">outfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\outfile.txt&quot;</span><span class="p">,</span><span class="s2">&quot;w+&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-99'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-99'>#</a>
+      </div>
+      <p>Call the main function</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">main</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-100'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-100'>#</a>
       </div>
       <p>Close output file</p>
     </div>
