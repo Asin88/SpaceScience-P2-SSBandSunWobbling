@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>main_3D.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>main_3D.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>Created on Sun Dec  6 20:25:00 2020</p>
+<p>@author: AAKRITI</p>
+<p>Space Science Project 2.1</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>=== Goal: Explore the movement of Sun around Solar System Barycenter (SSB) ===
+<strong>This time in 3D</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>According to Kepler&rsquo;s laws, the Earth revolves in an elliptical orbit with the 
+Sun at one of it focii. However, applying Newton&rsquo;s mechanics related to centre 
+of mass, it is seen that the centre of mass of the total solar system does not
+necessarily coincide with the centre of the Sun. Even though the Sun accounts
+for nearly 90% of the total mass of the solar system, the mass of the other 
+bodies such as planets, moons, comets, and asteroids are enough to 
+offset the centre of mass of the solar system. This centre of mass is known as
+the Solar System Barycentre (SSB).</p>
+<p>Consequently, the bodies of the solar system, including the Sun, orbit the SSB,
+and not the centre of the Sun. </p>
+<p>In this project, we shall see how far away from the Sun the SSB is. We shall 
+analyse whether the distance is significant. We shall also plot the 3D movement
+of the Sun around the SSB over a certain time period selected randomly. The 
+current program is the second version of the previous program. Here, we shall
+redo the visualization in 3d coordinates.</p>
+<p>We will be using the NASA toolkit SPICE in Python3 using the wrapper library
+spiceypy. The plotting will be done using the matplotlib library. </p>
+<p>In order to perform the necessary computations, we shall need some NAIF kernels.
+We have created a subfolder called _kernels under /data/external folder to
+hold all kernels needed in this and further projects. We are now also adding a 
+meta file &lsquo;SPICE_kernels_metafile_P2.txt&rsquo; under /references/ that holds the 
+relative paths of all kernels needed in this project. This file will be 
+referenced just once in the program to load all necessary kernels at once. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p><strong>Import modules</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="kn">import</span> <span class="nn">spiceypy</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="kn">as</span> <span class="nn">dt</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits</span> <span class="kn">import</span> <span class="n">mplot3d</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      <h3><span id="description-of-spice-functions-used-in-this-program" href="description-of-spice-functions-used-in-this-program"> Description of SPICE functions used in this program </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p><strong>SPKGPS function</strong></p>
+<p>To compute the position vectors of SSB wrt Sun, we shall use the spkgps 
+function for positional information. The corresponding kernel has been 
+downloaded and its path has been added to the kernel metafile.</p>
+<p>Function details found at 
+https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/spkgps_c.html </p>
+<p>Function description: Compute the geometric position of a target body relative 
+to an observing body.</p>
+<p>Detailed_Input</p>
+<p>targ        is the standard NAIF ID code for a target body. </p>
+<p>et          is the epoch (ephemeris time) at which the position 
+          of the target body is to be computed. </p>
+<p>ref         is the name of the reference frame to 
+          which the vectors returned by the routine should 
+          be rotated. This may be any frame supported by 
+          the CSPICE subroutine sxform_c. </p>
+<p>obs         is the standard NAIF ID code for an observing body. </p>
+<p>Detailed_Output</p>
+<p>pos         contains the position of the target 
+          body, relative to the observing body. This vector is 
+          rotated into the specified reference frame. Units 
+          are always km. </p>
+<p>lt          is the one-way light time from the observing body 
+          to the geometric position of the target body at the 
+          specified epoch. </p>
+<p>The target object is SSB (NAIF ID = 0) and the observer is the Sun 
+(NAIF ID = 10). NAIF IDs are referenced from 
+https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html
+The reference frame is the standard “Ecliptic Plane” of our planet set in the 
+year 2000. </p>
+<p><strong>BODVCD function</strong></p>
+<p>The radius of the Sun can be found from the bodvcd function.</p>
+<p>Abstract
+    Fetch from the kernel pool the double precision values 
+    of an item associated with a body, where the body is 
+    specified by an integer ID code.</p>
+<p>Brief_I/O</p>
+<p>VARIABLE  I/O  DESCRIPTION</p>
+<hr />
+<p>BODYID     I   Body ID code.
+ITEM       I   Item for which values are desired. (&lsquo;RADII&rsquo;,
+               &lsquo;NUT_PREC_ANGLES&rsquo;, etc. )
+MAXN       I   Maximum number of values that may be returned.
+DIM        O   Number of values returned.
+VALUES     O   Values.</p>
+<p>Detailed_Input</p>
+<p>BODYID     is the NAIF integer ID code for a body of interest.
+           For example, if the body is the earth, the code is
+           399.</p>
+<p>ITEM       is the item to be returned. Together, the NAIF ID
+           code of the body and the item name combine to form a
+           kernel variable name, e.g.,</p>
+<pre><code>             'BODY599_RADII'     
+             'BODY401_POLE_RA'
+
+       The values associated with the kernel variable having
+       the name constructed as shown are sought.  Below
+       we'll take the shortcut of calling this kernel variable
+       the "requested kernel variable."
+
+       Note that ITEM *is* case-sensitive.  This attribute
+       is inherited from the case-sensitivity of kernel
+       variable names.
+</code></pre>
+<p>MAXN       is the maximum number of values that may be returned.
+           The output array VALUES must be declared with size at
+           least MAXN.  It&rsquo;s an error to supply an output array
+           that is too small to hold all of the values associated
+           with the requested kernel variable.</p>
+<p>Detailed_Output</p>
+<p>DIM        is the number of values returned; this is always the
+           number of values associated with the requested kernel
+           variable unless an error has been signaled.</p>
+<p>VALUES     is the array of values associated with the requested
+           kernel variable.  If VALUES is too small to hold all
+           of the values associated with the kernel variable, the
+           returned values of DIM and VALUES are undefined.</p>
+<p>We extract the Sun radii (x, y, z components of the Sun ellipsoid) and 
+use the only x component as the radius is same along all coordinates.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      <h1>User functions</h1>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      <h3><span id="function-to-manage-kernels" href="function-to-manage-kernels"> Function to manage kernels </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      <p>Description: This function unloads previously loaded kernels, loads kernels
+listed in kernel metafile using the spiceypy furnsh function, and lists the 
+loaded kernels for verification purposes.</p>
+<p>Arguments:
+   kernel_meta: Location of kernel metafile</p>
+<p>Returns:
+   None</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_manage_kernels</span><span class="p">(</span><span class="n">kernel_meta</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>Unload all kernels</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">spiceypy</span><span class="o">.</span><span class="n">unload</span><span class="p">(</span> <span class="n">kernel_meta</span> <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>Load the necessary kernels from meta file</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">spiceypy</span><span class="o">.</span><span class="n">kclear</span><span class="p">()</span>
+    <span class="n">spiceypy</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="n">kernel_meta</span><span class="p">)</span>
+    <span class="n">spiceypy</span><span class="o">.</span><span class="n">furnsh</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\data\external\_kernels\lsk\naif0012.tls&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      <p>List loaded kernels</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">count</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">ktotal</span><span class="p">(</span> <span class="s1">&#39;ALL&#39;</span> <span class="p">)</span> 
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+        <span class="p">[</span> <span class="nb">file</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">handle</span><span class="p">]</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">kdata</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;ALL&#39;</span><span class="p">);</span>
+        <span class="k">print</span><span class="p">(</span> <span class="s1">&#39;File   {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">file</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span> <span class="s1">&#39;Type   {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span> <span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span> <span class="s1">&#39;Source {0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      <h3><span id="function-to-convert-time-from-utc-to-et" href="function-to-convert-time-from-utc-to-et"> Function to convert time from UTC to ET </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Description: This function converts a given time from UTC to ET format using
+the spiceypy utc2et function.</p>
+<p>Arguments:
+   time_utc: datetime object in UTC</p>
+<p>Returns:
+   time_et: ET time instring format</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_convert_utc_to_et</span><span class="p">(</span><span class="n">time_utc</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>Convert datetime object to str</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">time_utc_str</span> <span class="o">=</span> <span class="n">time_utc</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">T%H:%M:%S&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Convert UTC to ET</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">time_et</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">utc2et</span><span class="p">(</span><span class="n">time_utc_str</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">time_et</span><span class="p">,</span><span class="n">time_utc_str</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <h3><span id="function-to-compute-position-of-ssb-wrt-sun" href="function-to-compute-position-of-ssb-wrt-sun"> Function to compute position of SSB wrt Sun </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Description: This function computes the position of the SSB wrt Sun for the 
+given time using the spicepy spkgps function. </p>
+<p>Arguements:
+   time_et: Time for which position is to be calculated in ET</p>
+<p>Returns:
+   SSB_position: List of X, Y Z coordinates of position of SSB wrt Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_calc_position</span><span class="p">(</span><span class="n">time_et</span><span class="p">):</span>
+    
+    <span class="n">SSB_position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">spkgps</span><span class="p">(</span><span class="n">targ</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">et</span><span class="o">=</span><span class="n">time_et</span><span class="p">,</span>\
+                                            <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;ECLIPJ2000&quot;</span><span class="p">,</span><span class="n">obs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">SSB_position</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <h3><span id="function-to-scale-distance-to-radius-of-sun" href="function-to-scale-distance-to-radius-of-sun"> Function to scale distance to radius of Sun </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Description: This function scales the given distance to the radius of the Sun
+also passed to the function.</p>
+<p>Inputs:
+   distance: Distance (in km) to be scaled
+   radius_sun: Radius of Sun retreived in main function</p>
+<p>Returns:
+   distance_scaled: Distance scaled to the radius of the Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_scale_distance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">radius_sun</span><span class="p">):</span>
+    <span class="n">distance_scaled</span> <span class="o">=</span> <span class="n">distance</span><span class="o">/</span><span class="n">radius_sun</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">distance_scaled</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <h3><span id="function-to-plot-position-of-ssb-wrt-sun" href="function-to-plot-position-of-ssb-wrt-sun"> Function to plot position of SSB wrt Sun </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>Description: This function plots the given position of SSB wrt Sun in 3D.</p>
+<p>Inputs:
+   SSB_position_x: X-axis coordinate of SSB position wrt Sun
+   SSB_position_y: Y-axis coordinate of SSB position wrt Sun
+   SSB_position_z: Z-axis coordinate of SSB position wrt Sun</p>
+<p>Returns:
+   None    </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">f_plot_SSB_position</span><span class="p">(</span><span class="n">SSB_position_x</span><span class="p">,</span><span class="n">SSB_position_y</span><span class="p">,</span><span class="n">SSB_position_z</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>Set a dark background&hellip; since&hellip; space is dark</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;dark_background&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>Create a figure and ax</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span><span class="c1">#,projection=&#39;3d&#39;)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      <p>fig = plt.figure(figsize=(12, 8))
+   ax = plt.axes(projection=&lsquo;3d&rsquo;)
+   fig = plt.figure(figsize=(12, 8))</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">(</span><span class="s1">&#39;xkcd:black&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p>ax = fig.add_subplot(111, projection=&lsquo;3d&rsquo;)
+   ax = fig.gca(projection=&lsquo;3d&rsquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      <p>Create a yellow circle that represents the Sun, add it to the ax
+draw sphere</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span><span class="mi">20j</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span><span class="mi">10j</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot_surface</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <p>Plot the centre of the Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Centre of Sun&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-28'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-28'>#</a>
+      </div>
+      <p>Plot the SSB movement</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">SSB_position_x</span><span class="p">,</span> \
+            <span class="n">SSB_position_y</span><span class="p">,</span> \
+            <span class="n">SSB_position_y</span><span class="p">,</span>\
+            <span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-29'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-29'>#</a>
+      </div>
+      <p>Set some parameters for the plot, set an equal ratio, set a grid, and set
+the x and y limits
+   ax.set_aspect(&lsquo;auto&rsquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-30'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-30'>#</a>
+      </div>
+      <p>Some labelling</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;X in Sun-Radius&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Y in Sun-Radius&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s1">&#39;Z in Sun-Radius&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-31'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-31'>#</a>
+      </div>
+      <p>Set font sizes</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">small_font_size</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">med_font_size</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">big_font_size</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;font&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="n">med_font_size</span><span class="p">)</span>     
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;axes&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">med_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;xtick&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;ytick&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">small_font_size</span><span class="p">)</span>    
+    <span class="n">plt</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s1">&#39;figure&#39;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="n">big_font_size</span><span class="p">)</span>  
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span><span class="n">ax</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-32'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-32'>#</a>
+      </div>
+      <h3><span id="main-function" href="main-function"> Main Function </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">():</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-33'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-33'>#</a>
+      </div>
+      <p><strong>Load necessary kernels from metafile</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    
+    <span class="n">f_manage_kernels</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\references\SPICE_kernels_metafile_P2.txt&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-34'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-34'>#</a>
+      </div>
+      <p><strong>Compute position of SSB wrt Sun</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-35'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-35'>#</a>
+      </div>
+      <p>First, we compute the position vectors of the SSB wrt the Sun at a
+randomly chosen time. Let&rsquo;s choose the time as my birthday (24 April 1988,
+9AM). </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">init_time_utc</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1988</span><span class="p">,</span>\
+                                <span class="n">month</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>\
+                                <span class="n">day</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span>\
+                                <span class="n">hour</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>\
+                                <span class="n">minute</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>\
+                                <span class="n">second</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-36'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-36'>#</a>
+      </div>
+      <p>We shall convert this time from UTC to ET.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">init_time_et</span><span class="p">,</span> <span class="n">init_time_utc_str</span> <span class="o">=</span> <span class="n">f_convert_utc_to_et</span><span class="p">(</span><span class="n">init_time_utc</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-37'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-37'>#</a>
+      </div>
+      <p>Compute the position of SSB wrt Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_init</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="n">init_time_et</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-38'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-38'>#</a>
+      </div>
+      <p>Report position</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;On {init_time_utc_str}: </span><span class="se">\n\n</span><span class="s2">Position of SSB wrt Sun: </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">          X-axis = {SSB_position_init[0]} km </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">          Y-axis = {SSB_position_init[1]} km </span><span class="se">\n</span><span class="s2"> </span><span class="se">\</span>
+<span class="s2">          Z-axis = {SSB_position_init[2]} km&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-39'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-39'>#</a>
+      </div>
+      <p>Compute distance of SSB from Sun in km</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_sun_distance</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">SSB_position_init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mf">2.0</span> \
+                                 <span class="o">+</span> <span class="n">SSB_position_init</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mf">2.0</span> \
+                                 <span class="o">+</span> <span class="n">SSB_position_init</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-40'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-40'>#</a>
+      </div>
+      <p>Convert km to AU</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_sun_distance_AU</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">convrt</span><span class="p">(</span><span class="n">SSB_sun_distance</span><span class="p">,</span> <span class="s1">&#39;km&#39;</span><span class="p">,</span> <span class="s1">&#39;AU&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-41'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-41'>#</a>
+      </div>
+      <p>Report value</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Distance between SSB and Sun in km: {SSB_sun_distance} km&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Distance between SSB and Sun in AU: {SSB_sun_distance_AU} AU&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-42'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-42'>#</a>
+      </div>
+      <p><strong>visualise the SSB wrt Sun</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-43'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-43'>#</a>
+      </div>
+      <p>We need to first scale the distance to the radius of the Sun using bodvcd
+function. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">_</span><span class="p">,</span> <span class="n">radii_sun</span> <span class="o">=</span> <span class="n">spiceypy</span><span class="o">.</span><span class="n">bodvcd</span><span class="p">(</span><span class="n">bodyid</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="s1">&#39;RADII&#39;</span><span class="p">,</span> <span class="n">maxn</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">radius_sun</span> <span class="o">=</span> <span class="n">radii_sun</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-44'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-44'>#</a>
+      </div>
+      <p>Scale position of SSB to radius of Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_init_scaled</span> <span class="o">=</span> <span class="n">f_scale_distance</span><span class="p">(</span><span class="n">SSB_position_init</span><span class="p">,</span> <span class="n">radius_sun</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-45'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-45'>#</a>
+      </div>
+      <p>Plot using matplotlib
+We only plot the x, y components (view on the ecliptic plane)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">f_plot_SSB_position</span><span class="p">(</span><span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+                                 <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>\
+                                 <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-46'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-46'>#</a>
+      </div>
+      <p>Add plot title</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Position of SSB wrt Centre of Sun on {init_time_utc_str}&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-47'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-47'>#</a>
+      </div>
+      <p>Annotate SSB datapoint</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_label</span> <span class="o">=</span> <span class="s2">&quot;SSB ({:.2f},{:.2f},{:.2f})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+                     <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>\
+            <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>\
+            <span class="n">SSB_position_init_scaled</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+            <span class="n">SSB_label</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-48'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-48'>#</a>
+      </div>
+      <p>Saving the figure in high quality</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\figures\SSB_WRT_SUN_INIT_3D.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-49'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-49'>#</a>
+      </div>
+      <h3><span id="compute-position-of-ssb-wrt-sun-over-a-certain-time-period" href="compute-position-of-ssb-wrt-sun-over-a-certain-time-period"> Compute position of SSB wrt Sun over a certain time period </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-50'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-50'>#</a>
+      </div>
+      <p>Now we shall look the change in position of SSB wrt Sun over a certain 
+time period. Let us choose a time period of 30 years starting from the
+time chosen in previous section. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">delta_days</span> <span class="o">=</span> <span class="mi">30</span><span class="o">*</span><span class="mi">365</span>
+    <span class="n">end_time_utc</span> <span class="o">=</span> <span class="n">init_time_utc</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">delta_days</span><span class="p">)</span>
+    <span class="n">end_time_et</span><span class="p">,</span> <span class="n">end_time_utc_str</span> <span class="o">=</span> <span class="n">f_convert_utc_to_et</span><span class="p">(</span><span class="n">end_time_utc</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-51'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-51'>#</a>
+      </div>
+      <p><strong>Side Note</strong>
+Here we can see why it is important to change time from UTC to ET. The 
+conversion helps to take into account leap years as well. When we use UTC,
+the total number of seconds in the given time period of 30 years is:
+30years<em>365days</em>24hours<em>60minutes</em>60seconds</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Covered UTC time interval in seconds: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span><span class="p">(</span><span class="mi">30</span><span class="o">*</span><span class="mi">365</span><span class="o">*</span><span class="mi">24</span><span class="o">*</span><span class="mi">60</span><span class="o">*</span><span class="mi">60</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-52'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-52'>#</a>
+      </div>
+      <p>The number of seconds after converting to ET are:</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Covered ET time interval in seconds: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> \
+          <span class="o">%</span><span class="p">(</span><span class="n">end_time_et</span> <span class="o">-</span> <span class="n">init_time_et</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-53'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-53'>#</a>
+      </div>
+      <p>The printed results show that there is a difference of 13.0000644 seconds
+between the two calculated time intervals. These are the leapseconds 
+added while converting UTC to ET. While these 13 seconds do not matter 
+much in the current program, they could have critical impact on space
+mission projects. A lot can happen in 13 seconds in space. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-54'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-54'>#</a>
+      </div>
+      <p>The Earth moves about 390 km through space in 13 seconds.
+The ISS travels almost 105 km around the Earth in 13 seconds. 
+An space-walking astronaut with a punctured suit has only 15 seconds
+before losing consciousness.
+<strong>End of Side Note</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-55'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-55'>#</a>
+      </div>
+      <p><strong>Record SSB position for each day</strong>
+Create a numpy array that covers a time interval in delta = 1 day step</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">time_interval_et</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">init_time_et</span><span class="p">,</span> <span class="n">end_time_et</span><span class="p">,</span> <span class="n">delta_days</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-56'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-56'>#</a>
+      </div>
+      <p>Compute SSB position wrt Sun for each day</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-57'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-57'>#</a>
+      </div>
+      <p>Set an empty list to store x, y, z components for each time step</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval</span> <span class="o">=</span> <span class="p">[]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-58'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-58'>#</a>
+      </div>
+      <p>Compute position of SSB wrt sun for each time step. </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">for</span> <span class="n">time_interval_et_f</span> <span class="ow">in</span> <span class="n">time_interval_et</span><span class="p">:</span>
+        <span class="n">_position</span> <span class="o">=</span> <span class="n">f_calc_position</span><span class="p">(</span><span class="n">time_interval_et_f</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-59'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-59'>#</a>
+      </div>
+      <p>Append the result to the final list</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">SSB_position_interval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_position</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-60'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-60'>#</a>
+      </div>
+      <p>Convert the list to a numpy array</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">SSB_position_interval</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-61'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-61'>#</a>
+      </div>
+      <p>Scale the position values using the Sun&rsquo;s radius</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval_scaled</span> <span class="o">=</span> <span class="n">f_scale_distance</span><span class="p">(</span><span class="n">SSB_position_interval</span><span class="p">,</span>\
+                                                    <span class="n">radius_sun</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-62'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-62'>#</a>
+      </div>
+      <p>Plot using matplotlib
+We only plot the x, y components (view on the ecliptic plane)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">f_plot_SSB_position</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span>\
+                                 <span class="n">SSB_position_interval_scaled</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span>\
+                                 <span class="n">SSB_position_interval_scaled</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-63'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-63'>#</a>
+      </div>
+      <p>Add plot title</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Position of SSB wrt Centre of Sun between {init_time_utc_str}</span><span class="se">\</span>
+<span class="s2">              and {end_time_utc_str}&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-64'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-64'>#</a>
+      </div>
+      <p>Add annotations</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>\
+            <span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>\
+            <span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s2">&quot;Day 1&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>    
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>\
+            <span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>\
+            <span class="n">SSB_position_interval_scaled</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span>
+            <span class="s2">&quot;30 yrs later&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-65'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-65'>#</a>
+      </div>
+      <p>Saving the figure in high quality</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\figures\SSB_WRT_SUN_30_YEARS_3D.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-66'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-66'>#</a>
+      </div>
+      <h3><span id="how-many-days-is-the-ssb-outside-the-sun?" href="how-many-days-is-the-ssb-outside-the-sun?"> How many days is the SSB outside the Sun? </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-67'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-67'>#</a>
+      </div>
+      <p>First, we compute the euclidean distance between the SSB and Sun.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval_scaled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">,</span>\
+                                                 <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Computation time: </span><span class="si">%s</span><span class="s1"> days&#39;</span> <span class="o">%</span> <span class="n">delta_days</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-68'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-68'>#</a>
+      </div>
+      <p>Compute number of days outside the Sun</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_outside_sun_days</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Fraction of time where the SSB</span><span class="se">\n</span><span class="s1">&#39;</span> \
+          <span class="s1">&#39;was outside the Sun: </span><span class="si">%.2f</span><span class="s1"> </span><span class="si">%%</span><span class="s1">&#39;</span> \
+          <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">SSB_outside_sun_days</span> <span class="o">/</span> <span class="n">delta_days</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-69'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-69'>#</a>
+      </div>
+      <h3><span id="when-was-ssb-closest-to-the-sun?" href="when-was-ssb-closest-to-the-sun?"> When was SSB closest to the Sun? </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-70'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-70'>#</a>
+      </div>
+      <p>Find minimum euclidean distance in selected time interval</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval_scaled</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">)</span>
+    <span class="n">SSB_position_interval_scaled_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-71'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-71'>#</a>
+      </div>
+      <p>Find day when distance was minimum</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_min_day</span> <span class="o">=</span> <span class="n">SSB_position_interval_scaled</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">SSB_position_interval_scaled_min</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-72'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-72'>#</a>
+      </div>
+      <p>Convert that day to UTC</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_min_day_utc</span> <span class="o">=</span> <span class="n">init_time_utc</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">SSB_min_day</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-73'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-73'>#</a>
+      </div>
+      <p>Report</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">SSB was closest to centre of Sun on {SSB_min_day_utc},&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;i.e. {round(SSB_min_day/365,2)} years later.&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;It was only {round(SSB_position_interval_scaled_min*radius_sun,2)} km away.&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-74'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-74'>#</a>
+      </div>
+      <h3><span id="when-was-ssb-farthest-from-the-sun?" href="when-was-ssb-farthest-from-the-sun?"> When was SSB farthest from the Sun? </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-75'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-75'>#</a>
+      </div>
+      <p>Find maximum euclidean distance in selected time interval</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_position_interval_scaled</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">)</span>
+    <span class="n">SSB_position_interval_scaled_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">SSB_position_interval_scaled</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-76'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-76'>#</a>
+      </div>
+      <p>Find day when distance was minimum</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_max_day</span> <span class="o">=</span> <span class="n">SSB_position_interval_scaled</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">SSB_position_interval_scaled_max</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-77'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-77'>#</a>
+      </div>
+      <p>Convert that day to UTC</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">SSB_max_day_utc</span> <span class="o">=</span> <span class="n">init_time_utc</span> <span class="o">+</span> <span class="n">dt</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">SSB_max_day</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-78'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-78'>#</a>
+      </div>
+      <p>Report</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">SSB was farthest from centre of Sun on {SSB_max_day_utc},&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;i.e. {round(SSB_max_day/365,2)} years later.&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;It was {round(SSB_position_interval_scaled_max*radius_sun,2)} km away.&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-79'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-79'>#</a>
+      </div>
+      <h3><span id="run-the-script" href="run-the-script"> Run the Script </span></h3>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-80'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-80'>#</a>
+      </div>
+      <p>Output file</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">outfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;E:\Data Science Projects\Space Science\SpaceScience-P2-SSBandSunWobbling\reports\outfile.txt&quot;</span><span class="p">,</span><span class="s2">&quot;w+&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-81'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-81'>#</a>
+      </div>
+      <p>Call the main function</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">main</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-82'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-82'>#</a>
+      </div>
+      <p>Close output file</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">outfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
